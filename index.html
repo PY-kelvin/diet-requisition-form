@@ -226,28 +226,56 @@
 
     <!-- Added a simple animation script for form submission to feel more interactive -->
     <script>
-        document.getElementById('dietForm').addEventListener('submit', function (e) {
+        document.getElementById('dietForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
+            
             const btn = document.querySelector('.submit-btn');
             const originalText = btn.textContent;
-
+            
             btn.textContent = 'Submitting...';
             btn.style.opacity = '0.8';
             btn.style.pointerEvents = 'none';
 
-            setTimeout(() => {
-                btn.textContent = 'Success!';
-                btn.style.background = '#10b981';
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                age: parseInt(document.getElementById('age').value, 10),
+                testScore: parseInt(document.getElementById('testScore').value, 10)
+            };
+            
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = 'var(--primary)';
-                    btn.style.opacity = '1';
-                    btn.style.pointerEvents = 'all';
+                const result = await response.json();
+
+                if (response.ok) {
+                    btn.textContent = 'Success!';
+                    btn.style.background = '#10b981';
+                } else {
+                    console.error("Server error:", result);
+                    btn.textContent = 'Failed to submit';
+                    btn.style.background = '#ef4444';
+                }
+            } catch (err) {
+                console.error("Network error:", err);
+                btn.textContent = 'Network Error';
+                btn.style.background = '#ef4444';
+            }
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = 'var(--primary)';
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'all';
+                if (btn.textContent === originalText) {
                     this.reset();
-                }, 2000);
-            }, 1000);
+                }
+            }, 3000);
         });
     </script>
 </body>
